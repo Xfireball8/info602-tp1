@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-g -Wall -Werror -pedantic -std=c99
+CFLAGS=-g -Wall -Werror -pedantic -std=c99 -rdynamic
 GTKCFLAGS=-g $(shell pkg-config --cflags gtk+-3.0)
 GTKLIBS=$(shell pkg-config --libs gtk+-3.0)
 TP_EXEC_TITLE=diletta_faisal_tp

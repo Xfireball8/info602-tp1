@@ -1,19 +1,60 @@
+<!-- This file is for drawing the window.
+ 		We declare Gtk objects and assign values to the property
+	that interest us. -->
 <interface>
+
+	<!-- For example here we create a GtkWindow
+ 			Which is our top level widget which contain
+		all the other things.
+
+	 	We assign to that object and Id : it is usefull
+	to retrieve it in our C Code when we need it with
+	GtkBuilder.
+
+	And we inform GtkBuilder (Which is the interpreter of
+	this file) that this object is of Class GtkWindow. -->
 	<object id="window" class="GtkWindow">
+
+		<!-- Here are the property of our GtkWindow
+	 		As you see, we put the name of the property
+		in the name attribute and it's value between brackets -->
 		<property name="visible">True</property>
 		<property name="title">Tp de Diletta et Faisal</property>
 		<property name="default-height">600</property>
 		<property name="default-width">600</property>
+
+		<!-- Now we know that this window has childs.
+	 			For this example, i choose to create a toolbar
+			in which i put several button for our future program.
+		Such as Open (for opening a jpg file )
+		Such as Input (for showing the original image)
+		Such as Output (for showing the modified picture/image)
+		Such as Seuil (for doing the 2. of our TP)
+
+		To do that i needed to give to the window a container.
+		In this particular case i provide the window with
+		a GtkGrid which is similar to Java's GridLayout-->
 		<child>
+
+			<!-- Here -->
 			<object id="grid" class="GtkGrid">
-			<property name="visible">True</property>
+			<property name="visible">True</property> <!-- Always put visible to see the element -->
+
+			<!-- As always, in child brackets (because our toolbar is IN our
+			container) -->
 			<child>
 				<object id="toolbar" class="GtkToolbar">
 					<property name="visible">True</property>	
+
+					<!-- We put several childs which are our toolbar buttons -->
+
 					<child>
 						<object id="open_button" class="GtkToolButton">
 							<property name="label">Open</property>
 							<property name="visible">True</property>
+							<!-- In this particular case i informed my open button
+									 that when it receive the signal "clicked" he should
+									 execute the open_file function -->
 							<signal name="clicked" handler="open_file"/>
 						</object>
 					</child>
@@ -29,11 +70,11 @@
 							<property name="visible">True</property>
 						</object>
 					</child>
-					<child>	
+					<child>
 						<object id="seuil_button" class="GtkToolButton">
 							<property name="label">Seuillage</property>
 							<property name="visible">True</property>
-						</object>	
+						</object>
 					</child>
 				</object>
 			</child>

@@ -19,6 +19,7 @@ void
 open_file (	GtkToolButton	*toolbutton,
 		gpointer	user_data)
 {
+	/* Testing if the signal is working...*/
 	printf("Ok.");
 }
 
@@ -39,9 +40,10 @@ main (	int 	argc,
 
 	/* Construction de l'interface */
 
+	// Creating the builder to do the interface job
 	builder = gtk_builder_new ();
 
-	if( gtk_builder_add_from_file (	builder,
+	if( gtk_builder_add_from_file (	builder, /* Building the interface by providing UI FILE */
 					UI_FILE,
 					&error) == 0)
 	{
@@ -52,12 +54,14 @@ main (	int 	argc,
 	}
 
 	/* Connexion des signaux du builder */
-
+	// We tell the builder to connect the signals of the buttons
 	gtk_builder_connect_signals (	builder,
 					NULL);
 
 	/* Fermer la fenetre lorsque l'on appuie sur la croix rouge */
-	window = gtk_builder_get_object (builder, "window");
+	// In this particular case, i do it manually
+	window = gtk_builder_get_object (builder, "window"); // i get the window GObject
+	// Then i connect the signal to destroy the window at the end of the program.
 	g_signal_connect (window, "destroy", G_CALLBACK (gtk_main_quit), NULL);
 
 	gtk_main ();
