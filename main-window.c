@@ -28,34 +28,35 @@ open_file (	GtkToolButton	*toolbutton,
 	GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_OPEN; // don't worry about this for now...
 	gint res; // This variable is for the result we obtain when we close the window (Either file chosen or closed)
 
-	dialog = gtk_file_chooser_dialog_new ("Choisir Image",
-                                      window,
+	dialog = gtk_file_chooser_dialog_new ("Open File",
+                                      GTK_WINDOW(window),
                                       action,
-                                      _("_Cancel"), // For cancel event
-                                      GTK_RESPONSE_CANCEL, // The window send back this result message
-                                      _("_Open"), // For Open event
-                                      GTK_RESPONSE_ACCEPT, // The window send back GTK_RESPONSE_ACCEPT message
+                                      "_Cancel",
+                                      GTK_RESPONSE_CANCEL,
+                                      "_Open",
+                                      GTK_RESPONSE_ACCEPT,
                                       NULL);
 
 res = gtk_dialog_run (GTK_DIALOG (dialog)); // We're running the dialog now
 
 if (res == GTK_RESPONSE_ACCEPT) // If the user indeed provided us with a file...
   {
-    char *filename; // We create a string for the path of the file
+		printf("A file has been chosen.");
+		//char *filename; // We create a string for the path of the file
 
 		/* We create a GtkFileChooser to get the path of the file.
 				(This object is responsible of getting information from the dialog)*/
 
-		GtkFileChooser *chooser = GTK_FILE_CHOOSER (dialog);
+		//GtkFileChooser *chooser = GTK_FILE_CHOOSER (dialog);
 
 		// We create the file chooser by giving him the dialog we create earlier
-		filename = gtk_file_chooser_get_filename (chooser);
+		//filename = gtk_file_chooser_get_filename (chooser);
 
 		// What we do there is simply opening the file
 		// TODO : Test if the file is indeed a .png file
 		//				and do not open it if it's the case.
-    open_file (filename);
-    g_free (filename);
+    //open_file (filename);
+    //g_free (filename);
   }
 }
 
