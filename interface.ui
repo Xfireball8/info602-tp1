@@ -1,0 +1,43 @@
+<interface>
+	<object id="window" class="GtkWindow">
+		<property name="visible">True</property>
+		<property name="title">Tp de Diletta et Faisal</property>
+		<property name="default-height">600</property>
+		<property name="default-width">600</property>
+		<child>
+			<object id="grid" class="GtkGrid">
+			<property name="visible">True</property>
+			<child>
+				<object id="toolbar" class="GtkToolbar">
+					<property name="visible">True</property>	
+					<child>
+						<object id="open_button" class="GtkToolButton">
+							<property name="label">Open</property>
+							<property name="visible">True</property>
+							<signal name="clicked" handler="open_file"/>
+						</object>
+					</child>
+					<child>
+						<object id="input_button" class="GtkToolButton">
+							<property name="label">Input</property>
+							<property name="visible">True</property>
+						</object>
+					</child>
+					<child>
+						<object id="output_button" class="GtkToolButton">
+							<property name="label">Output</property>
+							<property name="visible">True</property>
+						</object>
+					</child>
+					<child>	
+						<object id="seuil_button" class="GtkToolButton">
+							<property name="label">Seuillage</property>
+							<property name="visible">True</property>
+						</object>	
+					</child>
+				</object>
+			</child>
+			</object>
+		</child>
+	</object>
+</interface>
