@@ -5,10 +5,50 @@
 #include <gtk/gtk.h>
 #define WINDOW_HEIGHT	500
 #define WINDOW_WIDTH	500
+#define IMAGE_BUFFER_HEIGHT	400
+#define IMAGE_BUFFER_WIDTH	400
 #define UI_FILE	"interface.ui"
 
 static GtkWidget *window = NULL;
+static GtkBuilder *builder = NULL; // UI Builder pour construire l'interface à partir du fichier XML UI_FILE
 
+
+/*	We need a function That loads the image specified in a filename path.
+		Basically, the structure of our UI is this :
+		GtkWindow (Actually Present)
+			-> GtkGrid (Actually Present)
+				-> GtkImage (Not present)
+					-> GdkPixbuf (Not present)
+
+	 So two work to do :
+	 	1. Put the GtkImage on our UI
+		(We may try the static approach with our UI file and the builder it
+	 	would be cleaner and easier, if we fail to do that, we'll need to
+		work it out with C functions and by manipulating the Grid with C)
+
+		2. Put in GtkImage the PixBuf that we will use to load our image.
+			This one step can be done like this :
+				a) load from a file a gdkpixbuf with gdk_pixbuf_new_from_file_at_size ()
+				b) put in GtkImage the gdkPixbuf
+*/
+
+void
+update_image_buffer(char *filename)
+{
+	// We need to get GtkImage Object (with id: image)
+	GObject *image;
+	GdkPixbuf *pixbuf;
+
+	image = gtk_builder_get_object (builder, "image");
+	pixbuf = gdk_pixbuf_new_from_file_at_size (	filename,
+																							IMAGE_BUFFER_WIDTH,
+																							IMAGE_BUFFER_HEIGHT,
+																							NULL);
+	gtk_image_set_from_pixbuf(	GTK_IMAGE(image),
+															pixbuf);
+
+	gtk_widget_queue_draw(GTK_WIDGET(image));
+}
 
 /* *
  * Fonction qui récupère le chemin d'accès d'une image sur l'ordinateur.
@@ -41,22 +81,25 @@ res = gtk_dialog_run (GTK_DIALOG (dialog)); // We're running the dialog now
 
 if (res == GTK_RESPONSE_ACCEPT) // If the user indeed provided us with a file...
   {
-		printf("A file has been chosen.");
-		//char *filename; // We create a string for the path of the file
+		char *filename; // We create a string for the path of the file
 
 		/* We create a GtkFileChooser to get the path of the file.
 				(This object is responsible of getting information from the dialog)*/
 
-		//GtkFileChooser *chooser = GTK_FILE_CHOOSER (dialog);
+		GtkFileChooser *chooser = GTK_FILE_CHOOSER (dialog);
 
 		// We create the file chooser by giving him the dialog we create earlier
-		//filename = gtk_file_chooser_get_filename (chooser);
+		filename = gtk_file_chooser_get_filename (chooser);
 
 		// What we do there is simply opening the file
 		// TODO : Test if the file is indeed a .png file
 		//				and do not open it if it's the case.
-    //open_file (filename);
-    //g_free (filename);
+
+		// We will need to put the image on the center of our window.
+
+		update_image_buffer(filename);
+
+    g_free (filename);
   }
 }
 
@@ -68,7 +111,6 @@ main (	int 	argc,
 	char 	**argv)
 {
 	/* Variables */
-	GtkBuilder *builder; // UI Builder pour construire l'interface à partir du fichier XML UI_FILE
 	GObject *window;
 	GError *error = NULL;
 
