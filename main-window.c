@@ -48,6 +48,7 @@ update_image_buffer(char *filename)
 															pixbuf);
 
 	gtk_widget_queue_draw(GTK_WIDGET(image));
+	printf(" image :  %p\npixbuf : %p\n", image, pixbuf);
 }
 
 /* *
@@ -65,12 +66,11 @@ open_file (	GtkToolButton	*toolbutton,
 		Variables
 	*/
 	GtkWidget *dialog; // Dialog is indeed a GtkWidget (Everything that is draw on the screen herit from GtkWidget)
-	GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_OPEN; // don't worry about this for now...
 	gint res; // This variable is for the result we obtain when we close the window (Either file chosen or closed)
 
 	dialog = gtk_file_chooser_dialog_new ("Open File",
                                       GTK_WINDOW(window),
-                                      action,
+                                      GTK_FILE_CHOOSER_ACTION_OPEN,
                                       "_Cancel",
                                       GTK_RESPONSE_CANCEL,
                                       "_Open",
@@ -101,6 +101,7 @@ if (res == GTK_RESPONSE_ACCEPT) // If the user indeed provided us with a file...
 
     g_free (filename);
   }
+	gtk_widget_destroy (dialog);
 }
 
 /* MAIN : Lance l'application et retourne le status d'execution de

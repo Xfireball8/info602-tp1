@@ -73,18 +73,18 @@
 					<child>
 						<object id="seuil_button" class="GtkToolButton">
 							<property name="label">Seuillage</property>
-							<property name="visible">True</property>
+					  		<property name="visible">True</property>
 						</object>
 					</child>
 				</object>
 			</child>
+			<!-- Create a child which is our GtkImage -->
+			<child>
+				<object id="image" class="GtkImage">
+					<property name="visible">True</property>
+				</object>
+			</child>
 			</object>
 		</child>
-
-		 <!-- Create a child which is our GtkImage -->
-		 <child>
-			 <object id="image" class="GtkImage">
-			 </object>
-		 </child>
 	</object>
 </interface>
