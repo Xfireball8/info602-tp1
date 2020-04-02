@@ -3,6 +3,7 @@
 	Faisal Salhi */
 
 #include <gtk/gtk.h>
+#include <math.h>
 #define WINDOW_HEIGHT	500
 #define WINDOW_WIDTH	500
 #define IMAGE_BUFFER_HEIGHT	400
@@ -39,6 +40,15 @@ void setGreyLevel( Pixel* data, unsigned char g )
   data->vert  = g;
   data->bleu  = g;
 }
+/**
+     Va au pixel de coordonnées (x,y) dans le pixbuf.
+*/
+Pixel* gotoPixel( GdkPixbuf* pixbuf, int x, int y )
+{
+    int rowstride = gdk_pixbuf_get_rowstride( pixbuf );
+    guchar* data  = gdk_pixbuf_get_pixels( pixbuf );
+    return (Pixel*)( data + y*rowstride + x*3 );
+}
 
 /* Fonction qui permet d'afficher le buffer d'output */
 void
@@ -65,6 +75,37 @@ make_input_buffer_visible()
 
 	gtk_widget_show(GTK_WIDGET(image_input_buffer));
 	gtk_widget_hide(GTK_WIDGET(image_output_buffer));
+}
+
+/* Fonction qui crée le tableau de guchar contenant les informations
+  de l'image seuillée. */
+void
+seuillage (GdkPixbuf *pixbuf_input, GdkPixbuf *pixbuf_output)
+{
+  // Obtenir la valeur du GtkScale
+  GObject *scale = gtk_builder_get_object (builder, "seuil-bouton")
+  int *seuil_value = floor((double)gtk_range_get_value (GTK_RANGE(scale)));
+
+  // initialiser et mettre à zéro le tableau de guchar
+  guchar *pixel_array[IMAGE_BUFFER_HEIGHT][IMAGE_BUFFER_WIDTH*3];
+
+  // Parcourir chaque pixel du pixbuf et assigner sa
+  // valeur en niveau de gris dans le tableau de résultat
+  for (int line = 0; line < IMAGE_BUFFER_HEIGHT;line++) {
+    for (int column = 0; column < IMAGE_BUFFER_WIDTH;column++) {
+      Pixel *current_pixel = gotoPixel(pixbuf_input, column, line);
+
+      if (greyLevel(current_pixel) >= seuil_value) {
+        setGreyLevel( pixel_array + (line*IMAGE_BUFFER_HEIGHT) + column*3,
+                      255);
+      } else {
+        setGreyLevel( pixel_array + (line*IMAGE_BUFFER_WIDTH) + column*3,
+                      0);
+      }
+    }
+  }
+
+
 }
 
 

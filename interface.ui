@@ -73,7 +73,7 @@
 						</object>
 					</child>
 					<child>
-						<object id="seuil_button" class="GtkToolButton">
+						<object id="seuil-button" class="GtkToolButton">
 							<property name="label">Seuillage</property>
 					  		<property name="visible">True</property>
 						</object>
