@@ -62,12 +62,14 @@
 						<object id="input_button" class="GtkToolButton">
 							<property name="label">Input</property>
 							<property name="visible">True</property>
+							<signal name="clicked" handler="make_input_buffer_visible" />
 						</object>
 					</child>
 					<child>
 						<object id="output_button" class="GtkToolButton">
 							<property name="label">Output</property>
 							<property name="visible">True</property>
+							<signal name="clicked" handler="make_output_buffer_visible" />
 						</object>
 					</child>
 					<child>
@@ -81,7 +83,7 @@
 
 			<!-- Our GtkImage which is our widget that contains our pixbuf -->
 			<child>
-				<object id="image" class="GtkImage">
+				<object id="input-image-buffer" class="GtkImage">
 					<property name="visible">True</property>
 				</object>
 				<packing>
@@ -91,13 +93,36 @@
 			</child>
 
 			<child>
-					<object id="scale" class="GtkScale">
-						
-					</object>
-					<packing>
+				<object id="output-image-buffer" class="GtkImage">
+					<property name="visible">True</property>
+				</object>
+				<packing>
+					<property name="left-attach">0</property>
+					<property name="top-attach">1</property>
+				</packing>
+			</child>
+
+			<child>
+				<object id="scale" class="GtkScale">
+					<property name="visible">True</property>
+					<property name="orientation">horizontal</property>
+				  <property name="draw-value">TRUE</property>
+				  <property name="value-pos">right</property>
+				  <property name="adjustment">distance-adjustment</property>
+				  <property name="digits">1</property>
+					<child>
+						<object id="distance-adjustment" class="GtkAdjustment">
+							<property name="value">100</property>
+							<property name="lower">0</property>
+							<property name="upper">255</property>
+							<property name="step-increment">1</property>
+						</object>
+					</child>
+				</object>
+				<packing>
 						<property name="left-attach">0</property>
-						<property name="top-attach">1</property>
-					</packing>
+						<property name="top-attach">2</property>
+				</packing>
 			</child>
 			</object>
 		</child>
