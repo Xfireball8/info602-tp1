@@ -76,6 +76,7 @@
 						<object id="seuil-button" class="GtkToolButton">
 							<property name="label">Seuillage</property>
 					  		<property name="visible">True</property>
+							<signal name="clicked" handler="seuillage" />
 						</object>
 					</child>
 				</object>
