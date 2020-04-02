@@ -4,6 +4,7 @@
 
 #include <gtk/gtk.h>
 #include <math.h>
+#include <assert.h>
 #define WINDOW_HEIGHT	500
 #define WINDOW_WIDTH	500
 #define IMAGE_BUFFER_HEIGHT	400
@@ -22,6 +23,36 @@ typedef struct {
    guchar vert;
    guchar bleu;
 } Pixel;
+
+/**
+    Utile pour vérifier que le GdkPixbuf a un formal usuel: 3 canaux RGB, 24 bits par pixel,
+*/
+void analyzePixbuf( GdkPixbuf* pixbuf )
+{
+   int n_channels      = gdk_pixbuf_get_n_channels( pixbuf );      // Nb de canaux (Rouge, Vert, Bleu, potentiellement Alpha)
+  int has_alpha       = gdk_pixbuf_get_has_alpha( pixbuf );       // Dit s'il y a un canal Alpha (transparence).
+  int bits_per_sample = gdk_pixbuf_get_bits_per_sample( pixbuf ); // Donne le nombre de bits par échantillon (8 bits souvent).
+  guchar* data        = gdk_pixbuf_get_pixels( pixbuf );          // Pointeur vers le tampon de données
+  int width           = gdk_pixbuf_get_width( pixbuf );           // Largeur de l'image en pixels
+  int height          = gdk_pixbuf_get_height( pixbuf );          // Hauteur de l'image en pixels
+  int rowstride       = gdk_pixbuf_get_rowstride( pixbuf );       // Nombre d'octets entre chaque ligne dans le tampon de données
+  printf( "n_channels = %d\n", n_channels );
+  printf( "has_alpha  = %d\n", has_alpha );
+  printf( "bits_per_sa= %d\n", bits_per_sample );
+  printf( "width      = %d\n", width );
+  printf( "height     = %d\n", height );
+  printf( "data       = %p\n", data );
+   printf( "rowstride  = %d\n", rowstride );
+  Pixel*  pixel = (Pixel*) data;
+   printf( "sizeof(Pixel)=%ld\n", sizeof(Pixel) );
+   size_t diff = ((guchar*) (pixel+1)) - (guchar*) pixel;
+   printf( "(pixel+1) - pixel=%ld\n", diff );
+  assert( n_channels == 3 );
+  assert( has_alpha == FALSE );
+  assert( bits_per_sample == 8 );
+   assert( sizeof(Pixel) == 3 );
+  assert( diff == 3 );
+}
 
 /**
     Retourne le niveau de gris du pixel.
@@ -85,25 +116,28 @@ seuillage ()
   // Obtenir la valeur du GtkScale
 	GObject *input_image = gtk_builder_get_object ( builder, "input-image-buffer");
 	GdkPixbuf *input_pixbuf = gtk_image_get_pixbuf (GTK_IMAGE(input_image));
+	int height = gdk_pixbuf_get_height(input_pixbuf);
+	int width = gdk_pixbuf_get_width(input_pixbuf);
+	int rowstride =  gdk_pixbuf_get_rowstride( input_pixbuf );
 	GObject *output_image = gtk_builder_get_object ( builder, "output-image-buffer");
 	GdkPixbuf *output_pixbuf;
-	GObject *scale = gtk_builder_get_object (builder, "seuil-bouton");
-  int seuil_value = floor((double)gtk_range_get_value (GTK_RANGE(scale)));
+	GObject *scale = gtk_builder_get_object (builder, "scale");
+  int seuil_value = (int)gtk_range_get_value (GTK_RANGE(scale));
 
   // initialiser et mettre à zéro le tableau de guchar
   guchar *pixel_array =(guchar *)malloc(sizeof(guchar)*IMAGE_BUFFER_HEIGHT*(IMAGE_BUFFER_WIDTH*3));
 
   // Parcourir chaque pixel du pixbuf et assigner sa
   // valeur en niveau de gris dans le tableau de résultat
-  for (int line = 0; line < IMAGE_BUFFER_HEIGHT;line++) {
-    for (int column = 0; column < IMAGE_BUFFER_WIDTH;column++) {
+  for (int line = 0; line < height;line++) {
+    for (int column = 0; column < width;column++) {
       Pixel *current_pixel = gotoPixel(input_pixbuf, column, line);
 
       if (greyLevel(current_pixel) >= seuil_value) {
-        setGreyLevel((Pixel *) pixel_array + (line*IMAGE_BUFFER_HEIGHT) + column*3,
+        setGreyLevel((Pixel *) (pixel_array + (line*rowstride) + column*3),
                       255);
       } else {
-        setGreyLevel((Pixel *) pixel_array + (line*IMAGE_BUFFER_WIDTH) + column*3,
+        setGreyLevel((Pixel *) (pixel_array + (line*rowstride) + column*3),
                       0);
       }
 
@@ -114,11 +148,12 @@ seuillage ()
 																							GDK_COLORSPACE_RGB,
 																							FALSE,
 																							8,
-																							IMAGE_BUFFER_WIDTH,
-																							IMAGE_BUFFER_HEIGHT,
-																							IMAGE_BUFFER_WIDTH,
+																							width,
+																							height,
+																							rowstride,
 																							NULL,
 																							NULL);
+																							
   gtk_image_set_from_pixbuf (	GTK_IMAGE(output_image),
 															output_pixbuf);
 	gtk_widget_queue_draw(GTK_WIDGET(output_image));
