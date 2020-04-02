@@ -81,6 +81,79 @@ Pixel* gotoPixel( GdkPixbuf* pixbuf, int x, int y )
     return (Pixel*)( data + y*rowstride + x*3 );
 }
 
+/****************** Structure Union-Find ************/
+
+/// Un Objet stocke donc un pointeur vers son pixel, son rang et un pointeur vers l'objet père.
+typedef struct SObjet {
+  Pixel* pixel; // adresse du pixel dans le pixbuf
+  int rang;
+  struct SObjet* pere;
+} Objet;
+
+
+Objet*
+CreerEnsembles()
+{
+	GdkPixbuf *pixbuf = gtk_image_get_pixbuf( gtk_builder_get_object (builder, "input-image"));
+	int height = gdk_pixbuf_get_height(pixbuf);
+	int width = gdk_pixbuf_get_width(pixbuf);
+	Objet *ensemble = (Objet *)malloc(sizeof(Objet)*height*width);
+
+	for (int line = 0; line < height; line++){
+		for (int column = 0; column < width; width++){
+			ensemble[(line*height)+column]).pixel = gotoPixel(	pixbuf,
+																													column,
+																													line);
+			ensemble[(line*height)+column]).rang = 0;
+			ensemble[(line*height)+column]).pere = ensemble[(line*height)+column]);
+		}
+	}
+	return ensemble;
+}
+
+// Retourne le représentant de l'objet obj
+Objet*
+TrouverEnsemble( Objet* obj )
+{
+	if (obj->pere == obj){
+		return obj;
+	} else {
+		return (obj->pere = TrouverEnsemble(obj->pere));
+	}
+}
+
+// Si obj1 et obj2 n'ont pas les mêmes représentants, appelle Lier sur leurs représentants
+void
+Union( Objet* obj1, Objet* obj2 )
+{
+	Objet *rep1 = TrouverEnsemble(obj1);
+	Objet *rep2 = TrouverEnsemble(obj2);
+
+	if (rep1 != rep2){
+		if (obj1->rang > obj2->rang){
+			obj2->pere = obj1;
+		} else if (obj2->rang > obj1->rang) {
+			obj1->pere = obj2;
+		} else {
+			obj2->pere = obj1;
+			obj2->rang +=1;
+		}
+	}
+}
+
+// Si obj1 et obj2 sont tous deux des racines, et sont distincts, alors réalise l'union des deux arbres.
+void
+Lier( Objet* obj1, Objet* obj2 )
+{
+	if (obj1->pere == obj1 && obj2->pere == obj2){
+		Union(obj1,obj2);
+	}
+}
+
+/****************************************************/
+
+
+
 /* Fonction qui permet d'afficher le buffer d'output */
 void
 make_output_buffer_visible()
@@ -153,7 +226,7 @@ seuillage ()
 																							rowstride,
 																							NULL,
 																							NULL);
-																							
+
   gtk_image_set_from_pixbuf (	GTK_IMAGE(output_image),
 															output_pixbuf);
 	gtk_widget_queue_draw(GTK_WIDGET(output_image));
