@@ -9,6 +9,8 @@
 #define WINDOW_WIDTH	500
 #define IMAGE_BUFFER_HEIGHT	400
 #define IMAGE_BUFFER_WIDTH	400
+#define RGB_MIN 0
+#define RGB_MAX 255
 #define UI_FILE	"interface.ui"
 
 static GtkWidget *window = NULL;
@@ -81,6 +83,16 @@ Pixel* gotoPixel( GdkPixbuf* pixbuf, int x, int y )
     return (Pixel*)( data + y*rowstride + x*3 );
 }
 
+
+/**
+ */
+void setColor( Pixel* data, unsigned char r, unsigned char g, unsigned char b )
+{
+  data->rouge = r;
+  data->vert  = g;
+  data->bleu  = b;
+}
+
 /****************** Structure Union-Find ************/
 
 /// Un Objet stocke donc un pointeur vers son pixel, son rang et un pointeur vers l'objet père.
@@ -92,20 +104,20 @@ typedef struct SObjet {
 
 
 Objet*
-CreerEnsembles()
+CreerEnsembles(GdkPixbuf *pixbuf)
 {
-	GdkPixbuf *pixbuf = gtk_image_get_pixbuf( gtk_builder_get_object (builder, "input-image"));
 	int height = gdk_pixbuf_get_height(pixbuf);
 	int width = gdk_pixbuf_get_width(pixbuf);
-	Objet *ensemble = (Objet *)malloc(sizeof(Objet)*height*width);
+	int size = height*width;
+	Objet *ensemble = (Objet *)malloc(sizeof(Objet)*size);
 
 	for (int line = 0; line < height; line++){
-		for (int column = 0; column < width; width++){
-			ensemble[(line*height)+column]).pixel = gotoPixel(	pixbuf,
-																													column,
-																													line);
-			ensemble[(line*height)+column]).rang = 0;
-			ensemble[(line*height)+column]).pere = ensemble[(line*height)+column]);
+		for (int column = 0; column < width; column++){
+			ensemble[(line*width)+column].pixel = gotoPixel(	pixbuf,
+																												column,
+																												line);
+			ensemble[(line*width)+column].rang = 1;
+			ensemble[(line*width)+column].pere = &ensemble[(line*height)+column];
 		}
 	}
 	return ensemble;
@@ -115,38 +127,40 @@ CreerEnsembles()
 Objet*
 TrouverEnsemble( Objet* obj )
 {
-	if (obj->pere == obj){
-		return obj;
+	if (obj->pere != obj){
+		obj->pere = TrouverEnsemble(obj->pere);
+		return obj->pere;
 	} else {
-		return (obj->pere = TrouverEnsemble(obj->pere));
+		return obj->pere;
 	}
 }
 
 // Si obj1 et obj2 n'ont pas les mêmes représentants, appelle Lier sur leurs représentants
 void
-Union( Objet* obj1, Objet* obj2 )
+Lier( Objet* obj1, Objet* obj2 )
 {
+
 	Objet *rep1 = TrouverEnsemble(obj1);
 	Objet *rep2 = TrouverEnsemble(obj2);
 
 	if (rep1 != rep2){
 		if (obj1->rang > obj2->rang){
 			obj2->pere = obj1;
-		} else if (obj2->rang > obj1->rang) {
-			obj1->pere = obj2;
 		} else {
-			obj2->pere = obj1;
-			obj2->rang +=1;
+			obj1->pere = obj2;
+			if (obj1->rang == obj2->rang){
+				obj2->rang +=1;
+			}
 		}
 	}
 }
 
 // Si obj1 et obj2 sont tous deux des racines, et sont distincts, alors réalise l'union des deux arbres.
 void
-Lier( Objet* obj1, Objet* obj2 )
+Union( Objet* obj1, Objet* obj2 )
 {
-	if (obj1->pere == obj1 && obj2->pere == obj2){
-		Union(obj1,obj2);
+	if (obj1->pere == obj1 && obj2->pere == obj2 && obj1 != obj2){
+		Lier(obj1,obj2);
 	}
 }
 
@@ -233,6 +247,50 @@ seuillage ()
 
 }
 
+void
+composante_connexe() {
+	seuillage();
+	GObject *image = gtk_builder_get_object(builder, "output-image-buffer");
+	GdkPixbuf *pixbuf = gtk_image_get_pixbuf(GTK_IMAGE(image));
+	int height = gdk_pixbuf_get_height(pixbuf);
+	int width = gdk_pixbuf_get_width(pixbuf);
+	int size = height*width;
+	Objet *ensemble = CreerEnsembles(pixbuf);
+
+	for (int i = 0; i < (size-1); i++){
+		if (greyLevel(ensemble[i].pixel) == greyLevel(ensemble[i+1].pixel)){
+			Union(&ensemble[i],&ensemble[i+1]);
+		}
+
+		if (((-i-width)+((size)-1)) > 0 &&
+				greyLevel(ensemble[i].pixel) == greyLevel(ensemble[i+width].pixel))
+				{
+					Union(&ensemble[i],&ensemble[i+width]);
+				}
+
+	}
+
+
+	for (int i = 0; i < height*width; i++){
+		if (ensemble[i].pere == &ensemble[i]){
+			 int r = RGB_MIN + (rand() % (int)(RGB_MAX - RGB_MIN + 1));
+			 int g = RGB_MIN + (rand() % (int)(RGB_MAX - RGB_MIN + 1));
+			 int b = RGB_MIN + (rand() % (int)(RGB_MAX - RGB_MIN + 1));
+			 setColor(ensemble[i].pixel, r,g,b);
+		}
+	}
+
+
+	for (int i = 0; i < height*width; i++){
+		if (ensemble[i].pere != &ensemble[i]){
+			 Pixel *pere = ensemble[i].pere->pixel;
+			 setColor(ensemble[i].pixel, pere->rouge,pere->vert,pere->bleu);
+		}
+	}
+
+	gtk_widget_queue_draw(GTK_WIDGET(image));
+
+}
 
 /* Fonction qui met à jour le pixbuf input avec une image
 	chargé depuis le système. */
@@ -354,8 +412,9 @@ main (	int 	argc,
 	gtk_builder_add_callback_symbol (	builder,
 																		"seuillage",
 																		G_CALLBACK(seuillage));
-
-
+	gtk_builder_add_callback_symbol (	builder,
+																		"composante_connexe",
+																		G_CALLBACK(composante_connexe));
 		gtk_builder_connect_signals (	builder,
 						NULL);
 

@@ -79,6 +79,13 @@
 							<signal name="clicked" handler="seuillage" />
 						</object>
 					</child>
+					<child>
+						<object id="composante-connexe-button" class="GtkToolButton">
+							<property name="label">Composante Connexe</property>
+							<property name="visible">True</property>
+							<signal name="clicked" handler="composante_connexe" />
+						</object>
+					</child>
 				</object>
 			</child>
 
