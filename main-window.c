@@ -127,27 +127,24 @@ CreerEnsembles(GdkPixbuf *pixbuf)
 Objet*
 TrouverEnsemble( Objet* obj )
 {
-	if (obj->pere != obj){
-		obj->pere = TrouverEnsemble(obj->pere);
-		return obj->pere;
+	if (obj->pere == obj){
+		return obj;
 	} else {
-		return obj->pere;
+		Objet *new_pere = TrouverEnsemble(obj->pere);
+		obj->pere = new_pere;
+		return new_pere;
 	}
 }
 
-// Si obj1 et obj2 n'ont pas les mêmes représentants, appelle Lier sur leurs représentants
+// Si obj1 et obj2 sont tous deux des racines, et sont distincts, alors réalise l'union des deux arbres.
 void
 Lier( Objet* obj1, Objet* obj2 )
 {
-
-	Objet *rep1 = TrouverEnsemble(obj1);
-	Objet *rep2 = TrouverEnsemble(obj2);
-
-	if (rep1 != rep2){
+	if (obj1->pere == obj1 && obj2->pere == obj2 && obj1 != obj2){
 		if (obj1->rang > obj2->rang){
-			obj2->pere = obj1;
-		} else {
 			obj1->pere = obj2;
+		} else {
+			obj2->pere = obj1;
 			if (obj1->rang == obj2->rang){
 				obj2->rang +=1;
 			}
@@ -155,11 +152,16 @@ Lier( Objet* obj1, Objet* obj2 )
 	}
 }
 
-// Si obj1 et obj2 sont tous deux des racines, et sont distincts, alors réalise l'union des deux arbres.
+// Si obj1 et obj2 n'ont pas les mêmes représentants, appelle Lier sur leurs représentants
 void
 Union( Objet* obj1, Objet* obj2 )
 {
-	if (obj1->pere == obj1 && obj2->pere == obj2 && obj1 != obj2){
+	Objet *rep1 = TrouverEnsemble(obj1);
+	Objet *rep2 = TrouverEnsemble(obj2);
+
+	if (rep1 != rep2){
+		Lier(rep1,rep2);
+	} else {
 		Lier(obj1,obj2);
 	}
 }
@@ -257,18 +259,39 @@ composante_connexe() {
 	int size = height*width;
 	Objet *ensemble = CreerEnsembles(pixbuf);
 
-	for (int i = 0; i < (size-1); i++){
-		if (greyLevel(ensemble[i].pixel) == greyLevel(ensemble[i+1].pixel)){
-			Union(&ensemble[i],&ensemble[i+1]);
+	for (int line = 0; line < height; line++){
+		for (int column = 0; column < width-1; column++) {
+			int pos = (line*width)+column;
+			int pos_right = pos+1;
+			int pos_bottom = pos+width;
+
+			if (greyLevel(ensemble[pos].pixel) == greyLevel(ensemble[pos_right].pixel)){
+				Union(&ensemble[pos],&ensemble[pos_right]);
+			}
+
+			if (pos < ((height*width)-width) &&
+					greyLevel(ensemble[pos].pixel) == greyLevel(ensemble[pos_bottom].pixel))
+					{
+						Union(&ensemble[pos],&ensemble[pos_bottom]);
+					}
 		}
 
-		if (((-i-width)+((size)-1)) > 0 &&
-				greyLevel(ensemble[i].pixel) == greyLevel(ensemble[i+width].pixel))
-				{
-					Union(&ensemble[i],&ensemble[i+width]);
-				}
-
 	}
+
+/*
+	for (int j = 0; j < 20; j++){
+		for (int i = 0; i < width; i++){
+			printf("element[%d] addy %p : dad %p\n", (j*width)+i, &ensemble[(j*width)+i],ensemble[(j*width)+i].pere);
+		}
+		printf("\n\n\n");
+	}
+*/
+
+for (int i = 0; i < height*width; i++){
+	if (ensemble[i].pere == &ensemble[i]){
+		 printf("racine : %p\n", &ensemble[i]);
+	}
+}
 
 
 	for (int i = 0; i < height*width; i++){
@@ -283,7 +306,7 @@ composante_connexe() {
 
 	for (int i = 0; i < height*width; i++){
 		if (ensemble[i].pere != &ensemble[i]){
-			 Pixel *pere = ensemble[i].pere->pixel;
+			 Pixel *pere = TrouverEnsemble(&ensemble[i])->pixel;
 			 setColor(ensemble[i].pixel, pere->rouge,pere->vert,pere->bleu);
 		}
 	}
