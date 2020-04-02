@@ -78,7 +78,8 @@
 					</child>
 				</object>
 			</child>
-			<!-- Create a child which is our GtkImage -->
+
+			<!-- Our GtkImage which is our widget that contains our pixbuf -->
 			<child>
 				<object id="image" class="GtkImage">
 					<property name="visible">True</property>
@@ -87,6 +88,16 @@
 					<property name="left-attach">0</property>
 					<property name="top-attach">1</property>
 				</packing>
+			</child>
+
+			<child>
+					<object id="scale" class="GtkScale">
+						
+					</object>
+					<packing>
+						<property name="left-attach">0</property>
+						<property name="top-attach">1</property>
+					</packing>
 			</child>
 			</object>
 		</child>

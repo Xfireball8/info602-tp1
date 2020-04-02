@@ -13,25 +13,6 @@ static GtkWidget *window = NULL;
 static GtkBuilder *builder = NULL; // UI Builder pour construire l'interface à partir du fichier XML UI_FILE
 
 
-/*	We need a function That loads the image specified in a filename path.
-		Basically, the structure of our UI is this :
-		GtkWindow (Actually Present)
-			-> GtkGrid (Actually Present)
-				-> GtkImage (Not present)
-					-> GdkPixbuf (Not present)
-
-	 So two work to do :
-	 	1. Put the GtkImage on our UI
-		(We may try the static approach with our UI file and the builder it
-	 	would be cleaner and easier, if we fail to do that, we'll need to
-		work it out with C functions and by manipulating the Grid with C)
-
-		2. Put in GtkImage the PixBuf that we will use to load our image.
-			This one step can be done like this :
-				a) load from a file a gdkpixbuf with gdk_pixbuf_new_from_file_at_size ()
-				b) put in GtkImage the gdkPixbuf
-*/
-
 void
 update_image_buffer(char *filename)
 {
@@ -48,7 +29,6 @@ update_image_buffer(char *filename)
 															pixbuf);
 
 	gtk_widget_queue_draw(GTK_WIDGET(image));
-	printf(" image :  %p\npixbuf : %p\n", image, pixbuf);
 }
 
 /* *
